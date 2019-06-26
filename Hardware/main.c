@@ -15,7 +15,7 @@ int main(void)
 
     while (true)
     {
-        SerialCommGetPkg();
+        // SerialCommGetPkg();
         chThdSleepMilliseconds(200);
     }
 }
