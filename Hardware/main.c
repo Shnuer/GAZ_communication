@@ -15,7 +15,10 @@ int main(void)
 
     while (true)
     {
-        // SerialCommGetPkg();
-        chThdSleepMilliseconds(200);
+        SerialCommGetPkg();
+        dbgprintf('C');
+        
+        // palToggleLine(LINE_LED1);
+        // chThdSleepMilliseconds(200);
     }
 }

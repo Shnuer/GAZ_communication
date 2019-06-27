@@ -7,7 +7,7 @@ class CommunicationOnSerial(object):
     
     def __init__(self,num_port,transmission_speed = 115200):
         
-        self.ser = serial.Serial(num_port, transmission_speed)
+        self.ser = serial.Serial(num_port, transmission_speed, timeout = 2)
         self.work_resolution = False
         
         self.start_byte_speed = '#'
@@ -67,7 +67,7 @@ class CommunicationOnSerial(object):
             
             pkg = bytes([ord(self.start_byte_angle),
                             np.int8(angle_of_rotation_gaz),
-                            np.int16(control_value_angle)
+                            np.int8(control_value_angle)
                         ])       
 
             self.Push_msg(pkg)     
@@ -103,7 +103,7 @@ class CommunicationOnSerial(object):
         self.ser.write(pkg) 
 
     def getDebugLine(self):
-        return self.ser.readline(100)          
+        return self.ser.readline(10)       
 # Для теста предлагается в скрипте выделить часть "main" и в ней 
 # провести инициализацию и читать отладочные строки с периодической передачей значений скорости и поворота.
 
@@ -113,8 +113,8 @@ if __name__ == "__main__":
     num_port = '/dev/ttyACM0'
     Connection = CommunicationOnSerial(num_port)
 
-    value_for_test_speed = [-100, -50, -5, 5, 50, 100]
-    value_for_test_angle = [-100, -50, -5, 5, 50, 100]
+    # value_for_test_speed = [-100, -50, -5, 5, 50, 100]
+    # value_for_test_angle = [-100, -50, -5, 5, 50, 100]
 
     Connection.Activate_connection()
 
@@ -122,10 +122,12 @@ if __name__ == "__main__":
         time.sleep(1)
         Connection.Change_speed(50)
         time.sleep(1)
-        Connection.Change_angle_rotation(70)
+        Connection.Change_angle_rotation(50)
         time.sleep(1)
         Connection.Deactivate_connection()
         Connection.Activate_connection()
+        print('I get')
+        num = Connection.getDebugLine()
         
 
 
