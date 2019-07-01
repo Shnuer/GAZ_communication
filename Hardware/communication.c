@@ -33,41 +33,52 @@ void init_USB(void)
     usbStart( serusbcfg.usbp, &usbcfg );
     usbConnectBus( serusbcfg.usbp );
 
-    debug_stream = (BaseSequentialStream *)serusbcfg.usbp;
+    debug_stream = (BaseSequentialStream *)&SDU1;
 
 }
 
 SerialUSBDriver *comm_dr = &SDU1;
 
 void dbgprintf( const char* format, ... )
-{
+{   
+
     if ( !debug_stream )
         return;
 
     va_list ap;
     va_start(ap, format);
     chvprintf(debug_stream, format, ap);
+ 
+    
     va_end(ap);
+    palToggleLine(LINE_LED3);
 }
+
+
+
 
 int SerialCommGetPkg(void)
 {
-    // if (p_pkg == NULL)
-    //     return EINVAL;
-    // palToggleLine(LINE_LED2);
-    // chThdSleepMilliseconds(1000);
-    
+
+    palToggleLine(LINE_LED2);
     msg_t msg = chnGetTimeout(comm_dr, MS2ST(10));
-    // palToggleLine(LINE_LED3);
+
+    chThdSleepMilliseconds(1000);
     
+
     if (msg < 0)
     {
+        palToggleLine(LINE_LED1);
+        chThdSleepMilliseconds(1000);
         return EIO;
     }
-
+    
     char start_byte = msg;
     if (start_byte == '#')
     {
+        palToggleLine(LINE_LED3);
+        chThdSleepMilliseconds(1000);
+
         int8_t rcv_buffer[3];
         int32_t rcv_bytes = sizeof(rcv_buffer);
 
@@ -80,14 +91,16 @@ int SerialCommGetPkg(void)
 
         if(rcv_buffer[0] == 50 && (rcv_buffer[1]<<8)|(rcv_buffer[2])==rcv_buffer[0] * 2)
         {
-            palToggleLine(LINE_LED1);
+            palToggleLine(LINE_LED3);
         }
         
   
     }
 
     else if(start_byte == '$')
-    {
+    {   
+        palToggleLine(LINE_LED2);
+        chThdSleepMilliseconds(1000);
         
         int8_t rcv_buffer[2];
         int32_t rcv_bytes = sizeof(rcv_buffer);
@@ -109,6 +122,9 @@ int SerialCommGetPkg(void)
 
     else if(start_byte == '&')
     {
+        palToggleLine(LINE_LED1);
+        chThdSleepMilliseconds(1000);
+
         int8_t rcv_buffer[3];
         int32_t rcv_bytes = sizeof(rcv_buffer);
 
@@ -121,7 +137,7 @@ int SerialCommGetPkg(void)
 
         if(rcv_buffer[0] == 67 && rcv_buffer[1]== 89 && rcv_buffer[2] == 23)
         {
-            palToggleLine(LINE_LED2);
+            palToggleLine(LINE_LED1);
         }
         
     }

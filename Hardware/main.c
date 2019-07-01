@@ -14,11 +14,9 @@ int main(void)
 
 
     while (true)
-    {
+    {   
         SerialCommGetPkg();
-        dbgprintf('C');
-        
-        // palToggleLine(LINE_LED1);
-        // chThdSleepMilliseconds(200);
+        // palToggleLine(LINE_LED3);
+        dbgprintf(12);
     }
 }
