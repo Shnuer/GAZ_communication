@@ -7,7 +7,7 @@ class CommunicationOnSerial(object):
     
     def __init__(self,num_port,transmission_speed = 115200):
         
-        self.ser = serial.Serial(num_port, transmission_speed, timeout = 2)
+        self.ser = serial.Serial(num_port, transmission_speed, timeout = 20)
         self.work_resolution = False
         
         self.start_byte_speed = '#'
@@ -47,14 +47,17 @@ class CommunicationOnSerial(object):
         self.work_resolution = False
         
 
-
+    
     def Change_speed(self, speed_gaz):
+        
         if self.work_resolution == True:
 
-            control_value_speed = speed_gaz * 2
+            push_speed = np.uint8(speed_gaz)
+            control_value_speed = np.uint8(speed_gaz * 2)
+
             pkg = bytes([ord(self.start_byte_speed),
-                            np.int8(speed_gaz),
-                            np.int16(control_value_speed)
+                            np.uint8(speed_gaz),
+                            np.uint8(control_value_speed)
                         ])
 
             self.Push_msg(pkg)
@@ -62,15 +65,17 @@ class CommunicationOnSerial(object):
 
     def Change_angle_rotation(self, angle_of_rotation_gaz):
         if self.work_resolution == True:
-            
-            control_value_angle = angle_of_rotation_gaz * 2
+
+            push_angle = np.uint8(angle_of_rotation_gaz)
+            control_value_angle = np.uint8(angle_of_rotation_gaz * 3)
             
             pkg = bytes([ord(self.start_byte_angle),
-                            np.int8(angle_of_rotation_gaz),
-                            np.int8(control_value_angle)
+                            np.uint8(angle_of_rotation_gaz),
+                            np.uint8(control_value_angle)
                         ])       
 
             self.Push_msg(pkg)     
+
 
     def Enable_debugging(self):
 
@@ -103,31 +108,36 @@ class CommunicationOnSerial(object):
         self.ser.write(pkg) 
 
     def getDebugLine(self):
-        return self.ser.readline(10)       
+        return self.ser.readline(100)       
 # Для теста предлагается в скрипте выделить часть "main" и в ней 
 # провести инициализацию и читать отладочные строки с периодической передачей значений скорости и поворота.
 
 
 if __name__ == "__main__":
 
-    num_port = '/dev/ttyACM0'
+    num_port = '/dev/ttyACM1'
     Connection = CommunicationOnSerial(num_port)
 
     # value_for_test_speed = [-100, -50, -5, 5, 50, 100]
     # value_for_test_angle = [-100, -50, -5, 5, 50, 100]
 
     Connection.Activate_connection()
+    # Connection.Enable_debugging()
 
     while(1):
         time.sleep(1)
-        Connection.Change_speed(50)
+        Connection.Change_speed(100)
         time.sleep(1)
-        Connection.Change_angle_rotation(50)
+        Connection.Change_angle_rotation(80)
         time.sleep(1)
-        Connection.Deactivate_connection()
-        Connection.Activate_connection()
+        # # Connection.Deactivate_connection()
+        # time.sleep(1)
+        # Connection.Activate_connection()
         print('I get')
+
         num = Connection.getDebugLine()
+        print(num)
+        print()
         
 
 
