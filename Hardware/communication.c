@@ -21,18 +21,19 @@ extern SerialUSBDriver SDU1;
 }
 #endif
 
-int8_t speed_value = 0;
-int8_t angle_value = 0;
-bool flag_debug = 1;
-int survey_period_milliseconds;
+static  int8_t speed_value = 13;
+static  int8_t angle_value = 0;
+
+static bool flag_debug = 0;
+static int survey_period_milliseconds;
 
 static BaseSequentialStream *debug_stream = NULL;
 
-static THD_WORKING_AREA(waConnection_action_n, 128);
+static THD_WORKING_AREA(waConnection_action_n, 256);
 static THD_FUNCTION(Connection_action_n, arg)
     {
         arg = arg;
-
+        chThdSleepMilliseconds(500);
         while (true)
         {
             if (survey_period_milliseconds <= 0)
@@ -43,7 +44,7 @@ static THD_FUNCTION(Connection_action_n, arg)
             {   
                 chThdSleepMilliseconds(survey_period_milliseconds);
                 SerialCommGetPkg();
-                // chThdSleepMilliseconds(survey_period_milliseconds);
+                
             }
         }
     }
@@ -66,6 +67,7 @@ void init_USB(int period_milliseconds)
 
 
     chThdCreateStatic(waConnection_action_n, sizeof(waConnection_action_n), NORMALPRIO, Connection_action_n, NULL /* arg is NULL */);
+    chThdSleepMilliseconds( 1500 );
   
 }
 
@@ -91,14 +93,15 @@ void dbgprintf( const char* format, ... )
 }
 
 
-void get_value_speed(void)
+int get_value_speed(void)
 {
     return speed_value;
 }
 
-void get_value_angle(void)
+int get_value_angle(void)
 {
     return angle_value;
+
 }
 
 int SerialCommGetPkg(void)
@@ -135,7 +138,7 @@ int SerialCommGetPkg(void)
         if(rcv_buffer[0]*2 == rcv_buffer[1])
         {
             speed_value = rcv_buffer[0];
-            palToggleLine(LINE_LED3);
+
         }
 
   
@@ -143,7 +146,7 @@ int SerialCommGetPkg(void)
 
     else if(start_byte == '$')
     {   
-        
+        chThdSleepMilliseconds(10);
         
         
         uint8_t rcv_buffer[2];
@@ -158,9 +161,9 @@ int SerialCommGetPkg(void)
 
         if(rcv_buffer[0]*3 == rcv_buffer[1])
         {
-            palToggleLine(LINE_LED2);
+
             angle_value = rcv_buffer[0];
-            chThdSleepMilliseconds(1000);
+           
         }
         
 
@@ -168,8 +171,7 @@ int SerialCommGetPkg(void)
 
     else if(start_byte == '&')
     {
-        palToggleLine(LINE_LED1);
-        chThdSleepMilliseconds(1000);
+        chThdSleepMilliseconds(10);
 
         uint8_t rcv_buffer[3];
         int32_t rcv_bytes = sizeof(rcv_buffer);

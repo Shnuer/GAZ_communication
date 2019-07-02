@@ -53,7 +53,7 @@ class CommunicationOnSerial(object):
         if self.work_resolution == True:
 
             push_speed = np.uint8(speed_gaz)
-            control_value_speed = np.uint8(speed_gaz * 2)
+            control_value_speed = speed_gaz * 2
 
             pkg = bytes([ord(self.start_byte_speed),
                             np.uint8(speed_gaz),
@@ -67,7 +67,7 @@ class CommunicationOnSerial(object):
         if self.work_resolution == True:
 
             push_angle = np.uint8(angle_of_rotation_gaz)
-            control_value_angle = np.uint8(angle_of_rotation_gaz * 3)
+            control_value_angle = angle_of_rotation_gaz * 3
             
             pkg = bytes([ord(self.start_byte_angle),
                             np.uint8(angle_of_rotation_gaz),
@@ -118,23 +118,19 @@ if __name__ == "__main__":
     num_port = '/dev/ttyACM1'
     Connection = CommunicationOnSerial(num_port)
 
-    # value_for_test_speed = [-100, -50, -5, 5, 50, 100]
-    # value_for_test_angle = [-100, -50, -5, 5, 50, 100]
+
 
     Connection.Activate_connection()
-    # Connection.Enable_debugging()
+    Connection.Enable_debugging()
 
     while(1):
-        time.sleep(1)
-        Connection.Change_speed(100)
-        time.sleep(1)
-        Connection.Change_angle_rotation(80)
-        time.sleep(1)
-        # # Connection.Deactivate_connection()
-        # time.sleep(1)
-        # Connection.Activate_connection()
+        time.sleep(0.1)
+        Connection.Change_speed(25)
+        Connection.Change_angle_rotation(33)
+        Connection.Deactivate_connection()
+        Connection.Activate_connection()
+        
         print('I get')
-
         num = Connection.getDebugLine()
         print(num)
         print()
