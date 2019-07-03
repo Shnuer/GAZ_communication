@@ -4,6 +4,12 @@ import time
 
 
 class CommunicationOnSerial(object):
+    """Класс для работы с USB.
+    
+    Перед началом работы необходимо разрешить передачу данных.
+
+    Перед началом чтения отладочной строки необходимопередать разрешение на отладку.
+    """
 
     def __init__(self, num_port, transmission_speed=115200):
 
@@ -14,58 +20,65 @@ class CommunicationOnSerial(object):
         self.start_byte_ctl = '#'
         self.start_byte_cmd = '&'
 
-    # Разрешение использования других команд
-    def Activate_connection(self):
+    def activate_connection(self):
+        """Разрешение передачи данных."""
+
         self.work_resolution = True
 
     # Команда остановки
-    def Deactivate_connection(self):
+    def deactivate_connection(self):
+        """Остановка соединения."""
 
         pkg = bytes([ord(self.start_byte_cmd), 67, 89, 23])
-        self.Push_msg(pkg)
+        self.__push_msg(pkg)
 
         self.work_resolution = False
 
     # Команда пауза
-    def Stop_connection(self):
+    def stop_connection(self):
+        """Пауза соединения."""
 
         pkg = bytes([ord(self.start_byte_cmd), 34, 63, 129])
-        self.Push_msg(pkg)
+        self.__push_msg(pkg)
         
         self.work_resolution = False
 
     def set_control(self, speed_gaz, steer_gaz):
+        """Передача значения скорости и угла поворота."""
 
-        if self.work_resolution == True:
+        if self.work_resolution is not False:
             pkg = bytes([ord(self.start_byte_ctl), 
                          np.uint8(speed_gaz),
                          np.uint8(steer_gaz),
                          np.uint8(speed_gaz + steer_gaz * 2)
                          ])
 
-            self.Push_msg(pkg)
+            self.__push_msg(pkg)
 
-    def Enable_debugging(self):
+    def enable_debugging(self):
+        """Передача разрешения для отладки."""
 
-        if self.work_resolution == True:
+        if self.work_resolution is not False:
 
             pkg = bytes([ord(self.start_byte_cmd), 38, 79, 123])
-            self.Push_msg(pkg)
+            self.__push_msg(pkg)
 
-    def Disable_debugging(self):
+    def disable_debugging(self):
+        """Передача запрета для отладки."""
 
-        if self.work_resolution == True:
+        if self.work_resolution is not False:
 
             pkg = bytes([ord(self.start_byte_cmd), 31, 39, 115])
-            self.Push_msg(pkg)
+            self.__push_msg(pkg)
 
-    ### to send a message to the microcontroller ###
 
-    def Push_msg(self, pkg):
+    def __push_msg(self, pkg):
         print('Send package: {} / hex: {}'.format(list(pkg), pkg))
         self.ser.write(pkg)
 
-    def getDebugLine(self):
+    def get_debug_line(self):
+        """Получения отладочной информации."""
+        
         data_2_read = self.ser.inWaiting()
         
         if data_2_read > 0:
@@ -82,22 +95,27 @@ class CommunicationOnSerial(object):
 
 # Для теста предлагается в скрипте выделить часть "main" и в ней
 # провести инициализацию и читать отладочные строки с периодической передачей значений скорости и поворота.
+# 
+# Для теста необходимо передать имя устройства в консоле при запуске файла на подобие: "python connection.py /dev/ttyACM1".
 
 
 if __name__ == "__main__":
 
     import argparse
+
+    # Производится чтение аргумента из консоли.
     parser = argparse.ArgumentParser(description='Communication script test')
     parser.add_argument('device', action='store', help='Serial port device')
 
     args = parser.parse_args()
 
+    # Создание объекта и передача полученного аргумента из консоли.
     Connection = CommunicationOnSerial(args.device)
 
     print('Set connection activated')
-    Connection.Activate_connection()
+    Connection.activate_connection()
     print('Set debug enabled')
-    Connection.Enable_debugging()
+    Connection.enable_debugging()
 
     print('Start main loop')
 
@@ -111,8 +129,9 @@ if __name__ == "__main__":
             spst_pair = (np.random.randint(-100, 100),
                          np.random.randint(-100, 100))
             print('New speed/steer pair: {}'.format(spst_pair))
+            
             Connection.set_control(spst_pair[0], spst_pair[1])
             
-        inp = Connection.getDebugLine()
+        inp = Connection.get_debug_line()
         if inp:
             print('I get: {}'.format(inp))
