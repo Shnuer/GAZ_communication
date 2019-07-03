@@ -1,11 +1,19 @@
-#ifdef _COMMUNICATION_
+#ifndef _COMMUNICATION_
+#define _COMMUNICATION_
 
+#include <stdint.h>
 
-#include <chprintf.h>
-void init_USB(int period_milliseconds);
-// int SerialCommGetPkg(void);
-void dbgprintf( const char* format, ... );
-int get_value_speed(void);
-int get_value_angle(void);
+#define COMM_MODE_SERIAL_PROG   1
+#define COMM_MODE_SERIAL_USB    2
+
+#define COMM_MODE   COMM_MODE_SERIAL_USB
+
+typedef int8_t comm_speed_t;
+typedef int8_t comm_steer_t;
+
+void comm_init();
+void comm_dbgprintf( const char* format, ... );
+comm_speed_t comm_get_speed( void );
+comm_steer_t comm_get_steer( void );
 
 #endif //_COMMUNICATION_
