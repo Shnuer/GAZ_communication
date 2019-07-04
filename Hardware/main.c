@@ -20,7 +20,10 @@ int main(void)
         value_speed_dbg = comm_get_speed();
         value_angle_dbg = comm_get_steer();
 
-        comm_dbgprintf("value speed dbg %d, value angle dbg %d\n", value_speed_dbg, value_angle_dbg);
+        comm_dbgprintf_info("value speed dbg %d, value angle dbg %d\n", value_speed_dbg, value_angle_dbg);
+
+        comm_dbgprintf_warning("Warning!\n");
+        comm_dbgprintf_error("Oops... Error\n");
         
         chThdSleepMilliseconds(200);
     }

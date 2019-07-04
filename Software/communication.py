@@ -13,6 +13,7 @@ class CommunicationOnSerial(object):
 
     def __init__(self, num_port, transmission_speed=115200):
 
+        
         self.ser = serial.Serial(num_port, transmission_speed, timeout=20)
         self.ser_buffer = ""
         self.work_resolution = False
@@ -93,10 +94,55 @@ class CommunicationOnSerial(object):
         
         return result
 
+
+class StateMessage(object):
+    """ Класс для определения приоритета сообщения.
+    
+    Значения каждого типа сообщения:
+
+    "Information" - информационное сообщение.
+    
+    "Warning" - предупреждающее сообщение.
+    
+    "Error" - сообщение об ошибки.
+    """
+
+    UNKNOWN_LVL = ('0', "UNKNOWN ERROR")
+
+    INFO_LVL = ("Information", "INF: ")
+    WARNING_LVL = ("Warning", "WARN: ") 
+    ERROR_LVL = ("Error", "ERR: ")
+
+    NOT_FOUND = -1
+
+    def __init__(self):
+        pass
+
+
+
+    def parsing_(self, msg):
+        """Принимает сообщение приоритет которого необходимо узнать."""
+
+        if msg.find(self.INFO_LVL[1]) != self.NOT_FOUND:
+            return self.INFO_LVL
+
+        elif msg.find(self.WARNING_LVL[1]) != self.NOT_FOUND:
+            return self.WARNING_LVL[0], msg[len(self.WARNING_LVL[1]):]
+
+        elif msg.find(self.ERROR_LVL[1]) != self.NOT_FOUND:
+            return self.ERROR_LVL
+
+        else:
+            return self.UNKNOWN_LVL
+
+
 # Для теста предлагается в скрипте выделить часть "main" и в ней
 # провести инициализацию и читать отладочные строки с периодической передачей значений скорости и поворота.
 # 
 # Для теста необходимо передать имя устройства в консоле при запуске файла на подобие: "python connection.py /dev/ttyACM1".
+#
+# Для тестирования модуля определения типа сообщения, сообщение из дебага отправляется в метод данного класса
+# на основе возращаемой константы класса выводится определенное сообщение.
 
 
 if __name__ == "__main__":
@@ -111,6 +157,9 @@ if __name__ == "__main__":
 
     # Создание объекта и передача полученного аргумента из консоли.
     Connection = CommunicationOnSerial(args.device)
+
+    # Создание объекта для определения типа сообщения.
+    String_pars = StateMessage()
 
     print('Set connection activated')
     Connection.activate_connection()
@@ -135,3 +184,12 @@ if __name__ == "__main__":
         inp = Connection.get_debug_line()
         if inp:
             print('I get: {}'.format(inp))
+            
+            if String_pars.parsing_(inp) != String_pars.UNKNOWN_LVL:
+                print("Logger")
+
+            if String_pars.parsing_(inp) != String_pars.INFO_LVL and String_pars.parsing_(inp) != String_pars.NOT_FOUND:
+                print("State Pub")
+
+
+

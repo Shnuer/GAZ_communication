@@ -58,18 +58,6 @@ static THD_FUNCTION(Connection_action_n, arg)
     }
 }
 
-static THD_WORKING_AREA(waBlinker, 256);
-static THD_FUNCTION(Blinker, arg)
-{
-    arg = arg;
-
-    while (true)
-    {
-        chThdSleepMilliseconds(500);
-        palToggleLine(LINE_LED3);     
-    }
-}
-
 /* Function to get data. */
 static int retrieve_input_data(void)
 {
@@ -159,7 +147,7 @@ static int retrieve_input_data(void)
 /* Initialization with a choice of USB or Serial. */
 void comm_init()
 {
-    chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, Blinker, NULL /* arg is NULL */);
+
 
 #if (COMM_MODE == COMM_MODE_SERIAL_USB)
     sduObjectInit(&SDU1);
@@ -192,8 +180,8 @@ void comm_init()
     chThdCreateStatic(waConnection_action_n, sizeof(waConnection_action_n), NORMALPRIO, Connection_action_n, NULL /* arg is NULL */);
 }
 
-/* Sending a debug line. */
-void comm_dbgprintf(const char *format, ...)
+/* Sending a debug line with info. */
+void comm_dbgprintf_info(const char *format, ...)
 {
     if (!debug_stream)
         return;
@@ -201,9 +189,48 @@ void comm_dbgprintf(const char *format, ...)
     if (!flag_debug)
         return;
 
+    char buffer[256];
+    sprintf(buffer, "INF: %s", format);
+
     va_list ap;
     va_start(ap, format);
-    chvprintf(debug_stream, format, ap);
+    chvprintf(debug_stream, buffer, ap);
+    va_end(ap);
+}
+
+/* Sending a debug line with warning. */
+void comm_dbgprintf_warning(const char *format, ...)
+{
+    if (!debug_stream)
+        return;
+
+    if (!flag_debug)
+        return;
+
+    char buffer[256];
+    sprintf(buffer, "WARN: %s", format);
+
+    va_list ap;
+    va_start(ap, format);
+    chvprintf(debug_stream, buffer, ap);
+    va_end(ap);
+}
+
+/* Sending a debug line with error. */
+void comm_dbgprintf_error(const char *format, ...)
+{
+    if (!debug_stream)
+        return;
+
+    if (!flag_debug)
+        return;
+
+    char buffer[256];
+    sprintf(buffer, "ERR: %s", format);
+
+    va_list ap;
+    va_start(ap, format);
+    chvprintf(debug_stream, buffer, ap);
     va_end(ap);
 }
 
