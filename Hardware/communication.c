@@ -6,29 +6,36 @@
 
 #define EOK 0
 
+/* USB configuration values ​​from usbcfg.c file */
 extern const USBConfig usbcfg;
 extern SerialUSBConfig serusbcfg;
 extern SerialUSBDriver SDU1;
 
+/* Global variables for speed and angle. */
 static comm_speed_t speed_value = 0;
 static comm_steer_t angle_value = 0;
 
+/* Flag to enable\disable debugging. */
 static bool flag_debug = 0;
 
-static BaseSequentialStream *debug_stream = NULL;
-static BaseChannel *comm_chn = NULL;
+static BaseSequentialStream *debug_stream = NULL; // The value read.
+static BaseChannel *comm_chn = NULL; // The value send.
 
 static int retrieve_input_data(void);
 
-#define INPUT_SYMB_CMD  '&'
+#define INPUT_SYMB_CMD  '&' // Starting byte for command.
+
+#define INPUT_SYMB_CTL  '#' // Starting byte to get new values.
+
+/* Structure of velocity, angle and checksum values */
 typedef struct {
     uint8_t speed;
     uint8_t steer;
     uint8_t ck;
 } input_cmd_t;
 
-#define INPUT_SYMB_CTL  '#'
 
+/* Thread for read data */
 static THD_WORKING_AREA(waConnection_action_n, 256);
 static THD_FUNCTION(Connection_action_n, arg)
 {
@@ -63,6 +70,7 @@ static THD_FUNCTION(Blinker, arg)
     }
 }
 
+/* Function to get data. */
 static int retrieve_input_data(void)
 {
     msg_t msg = chnGetTimeout(comm_chn, TIME_INFINITE);
@@ -88,10 +96,12 @@ static int retrieve_input_data(void)
         {
             return EIO;
         }
-
+        
+        /* Calculation and verification of checksum */
         uint8_t calc_ck = inp.speed + inp.steer * 2;
         if (calc_ck == inp.ck)
         {
+            /* Assigning global variables to a value from a received data packet. */
             speed_value = inp.speed;
             angle_value = inp.steer;
 
@@ -109,7 +119,7 @@ static int retrieve_input_data(void)
             return EIO;
         }
 
-        // Enable_debugging
+        /* Enable_debugging. */ 
         if (rcv_buffer[0] == 38 && rcv_buffer[1] == 79 && rcv_buffer[2] == 123)
         {
             flag_debug = 1;
@@ -117,7 +127,7 @@ static int retrieve_input_data(void)
             return EOK;
         }
 
-        // Disable_debugging
+        /* Disable_debugging. */
         if (rcv_buffer[0] == 31 && rcv_buffer[1] == 39 && rcv_buffer[2] == 115)
         {
             flag_debug = 0;
@@ -125,7 +135,7 @@ static int retrieve_input_data(void)
             return EOK;
         }
 
-        // Deactivate_connection
+        /* Deactivate_connection. */
         if (rcv_buffer[0] == 67 && rcv_buffer[1] == 89 && rcv_buffer[2] == 23)
         {
             speed_value = 0;
@@ -133,7 +143,7 @@ static int retrieve_input_data(void)
 
             return EOK;
         }
-        // Stop_connection
+        /* Stop_connection. */
         if (rcv_buffer[0] == 34 && rcv_buffer[1] == 63 && rcv_buffer[2] == 129)
         {
             speed_value = 0;
@@ -146,6 +156,7 @@ static int retrieve_input_data(void)
     return ENODATA;
 }
 
+/* Initialization with a choice of USB or Serial. */
 void comm_init()
 {
     chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, Blinker, NULL /* arg is NULL */);
@@ -155,7 +166,6 @@ void comm_init()
     sduStart(&SDU1, &serusbcfg);
 
     usbDisconnectBus(serusbcfg.usbp);
-    // chThdSleepMilliseconds(1500);
     usbStart(serusbcfg.usbp, &usbcfg);
     usbConnectBus(serusbcfg.usbp);
 
@@ -178,9 +188,11 @@ void comm_init()
     chSysHalt("Communication module: mode not set");
 #endif
 
+    /* Thread creation. */
     chThdCreateStatic(waConnection_action_n, sizeof(waConnection_action_n), NORMALPRIO, Connection_action_n, NULL /* arg is NULL */);
 }
 
+/* Sending a debug line. */
 void comm_dbgprintf(const char *format, ...)
 {
     if (!debug_stream)
@@ -195,11 +207,13 @@ void comm_dbgprintf(const char *format, ...)
     va_end(ap);
 }
 
+/* Return global variable speed from module. */
 comm_speed_t comm_get_speed(void)
 {
     return speed_value;
 }
 
+/* Return global variable angle from module. */
 comm_steer_t comm_get_steer(void)
 {
     return angle_value;

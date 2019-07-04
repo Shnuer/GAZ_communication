@@ -2,6 +2,9 @@
 #include <hal.h>
 #include <communication.h>
 
+/* For module test.
+Obtaining speed and angle values and sending them is processed.
+*/
 int main(void)
 {
     chSysInit();
