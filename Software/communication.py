@@ -44,6 +44,23 @@ class CommunicationOnSerial(object):
         
         self.work_resolution = False
 
+    
+    def on_start(self):
+        """Включить зажигание."""
+
+        pkg = bytes([ord(self.start_byte_cmd), 25, 45, 65])
+        self.__push_msg(pkg)
+        
+        self.work_resolution = False
+
+    def on_stop(self):
+        """Остановка."""
+
+        pkg = bytes([ord(self.start_byte_cmd), 13, 26, 39])
+        self.__push_msg(pkg)
+        
+        self.work_resolution = False
+
     def set_control(self, speed_gaz, steer_gaz):
         """Передача значения скорости и угла поворота."""
 

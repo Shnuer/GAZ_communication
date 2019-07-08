@@ -34,6 +34,21 @@ typedef struct {
     uint8_t ck;
 } input_cmd_t;
 
+typedef struct {
+
+    void (*on_start)(void);
+    void (*on_stop)(void);
+    void (*on_set)(uint8_t speed, uint8_t angle);
+
+} funcEvent_t
+
+funcEvent_t cpStructWithFunc;
+
+funcEvent_t getDefaultCfg(void)
+{
+    return funcEvent_t structFuncNull = {NULL, NULL, NULL};
+}
+
 
 /* Thread for read data */
 static THD_WORKING_AREA(waConnection_action_n, 256);
@@ -89,13 +104,15 @@ static int retrieve_input_data(void)
         uint8_t calc_ck = inp.speed + inp.steer * 2;
         if (calc_ck == inp.ck)
         {
+            cpStructWithFunc.on_set(inp.speed, inp.steer);
             /* Assigning global variables to a value from a received data packet. */
-            speed_value = inp.speed;
-            angle_value = inp.steer;
+            // speed_value = inp.speed;
+            // angle_value = inp.steer;
 
             return EOK;
         }
     }
+
     else if (start_byte == INPUT_SYMB_CMD)
     {
         uint8_t rcv_buffer[3];
@@ -139,14 +156,29 @@ static int retrieve_input_data(void)
 
             return EOK;
         }
+        /* On_start */
+        if (rcv_buffer[0] == 25 && rcv_buffer[1] == 45 && rcv_buffer[2] == 65)
+        {
+            cpStructWithFunc.on_start();
+            return EOK;
+        }
+        
+        /* On_stop */
+        if (rcv_buffer[0] == 13 && rcv_buffer[1] == 26 && rcv_buffer[2] == 39)
+        {
+            cpStructWithFunc.on_stop();
+
+            return EOK;
+        }
     }
 
     return ENODATA;
 }
 
 /* Initialization with a choice of USB or Serial. */
-void comm_init()
+void comm_init(funcEvent_t structWithFunc)
 {
+    cpStructWithFunc = structWithFunc;
 
 
 #if (COMM_MODE == COMM_MODE_SERIAL_USB)
@@ -234,14 +266,17 @@ void comm_dbgprintf_error(const char *format, ...)
     va_end(ap);
 }
 
-/* Return global variable speed from module. */
-comm_speed_t comm_get_speed(void)
-{
-    return speed_value;
-}
+// /* Return global variable speed from module. */
+// comm_speed_t comm_get_speed(void)
+// {
+//     return speed_value;
+// }
 
-/* Return global variable angle from module. */
-comm_steer_t comm_get_steer(void)
-{
-    return angle_value;
-}
+// /* Return global variable angle from module. */
+// comm_steer_t comm_get_steer(void)
+// {
+//     return angle_value;
+// }
+
+
+

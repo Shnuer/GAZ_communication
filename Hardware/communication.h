@@ -11,8 +11,11 @@
 typedef int8_t comm_speed_t;
 typedef int8_t comm_steer_t;
 
-void comm_init();
+typedef funcEvent_t;
+
+void comm_init(funcEvent_t structWithFunc);
 void comm_dbgprintf( const char* format, ... );
+funcEvent_t getDefaultCfg(void);
 comm_speed_t comm_get_speed( void );
 comm_steer_t comm_get_steer( void );
 
