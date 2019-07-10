@@ -34,7 +34,7 @@ int main(void)
     halInit();
 
     // funcEvent_t structForFunc = getDefaultCfg();
-    structEventFun_t structForFunc = {NULL, NULL, NULL};
+    communicationEventFun_t structForFunc = {NULL, NULL, NULL};
  
     structForFunc.on_set = &fucnt_on_set;
     structForFunc.on_start =&funct_on_start;

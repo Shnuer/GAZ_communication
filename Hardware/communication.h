@@ -18,11 +18,11 @@ typedef struct {
     void (*on_stop)(void);
     
 
-} structEventFun_t;
+} communicationEventFun_t;
 
-void comm_init(structEventFun_t structWithFunc);
+void comm_init(communicationEventFun_t structWithFunc);
 void comm_dbgprintf( const char* format, ... );
-structEventFun_t getDefaultCfg(void);
+communicationEventFun_t getDefaultCfg(void);
 comm_speed_t comm_get_speed( void );
 comm_steer_t comm_get_steer( void );
 

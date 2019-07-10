@@ -40,11 +40,11 @@ typedef struct {
 //     void (*on_stop)(void);
 // } structEventFun_t;
 
-structEventFun_t cpStructWithFunc;
+communicationEventFun_t cpStructWithFunc;
 
-structEventFun_t getDefaultCfg(void)
+communicationEventFun_t getDefaultCfg(void)
 {
-    structEventFun_t structFuncNull = {NULL, NULL, NULL};
+    communicationEventFun_t structFuncNull = {NULL, NULL, NULL};
     return  structFuncNull;
 }
 
@@ -178,7 +178,7 @@ static int retrieve_input_data(void)
 }
 
 /* Initialization with a choice of USB or Serial. */
-void comm_init(structEventFun_t structWithFunc)
+void comm_init(communicationEventFun_t structWithFunc)
 {
     
     cpStructWithFunc.on_start = structWithFunc.on_start;
