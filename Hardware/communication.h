@@ -11,7 +11,14 @@
 typedef int8_t comm_speed_t;
 typedef int8_t comm_steer_t;
 
-typedef structEventFun_t;
+typedef struct {
+
+    void (*on_set)(uint8_t speed, uint8_t angle);
+    void (*on_start)(void);
+    void (*on_stop)(void);
+    
+
+} structEventFun_t;
 
 void comm_init(structEventFun_t structWithFunc);
 void comm_dbgprintf( const char* format, ... );

@@ -34,20 +34,18 @@ typedef struct {
     uint8_t ck;
 } input_cmd_t;
 
-typedef struct {
-
-    void (*on_set)(uint8_t speed, uint8_t angle);
-    void (*on_start)(void);
-    void (*on_stop)(void);
-    
-
-} structEventFun_t;
+// typedef struct {
+//     void (*on_set)(uint8_t speed, uint8_t angle);
+//     void (*on_start)(void);
+//     void (*on_stop)(void);
+// } structEventFun_t;
 
 structEventFun_t cpStructWithFunc;
 
 structEventFun_t getDefaultCfg(void)
 {
-    return structEventFun_t structFuncNull = {NULL, NULL, NULL};
+    structEventFun_t structFuncNull = {NULL, NULL, NULL};
+    return  structFuncNull;
 }
 
 
@@ -92,6 +90,7 @@ static int retrieve_input_data(void)
     char start_byte = msg;
     if (start_byte == INPUT_SYMB_CTL)
     {
+        
         input_cmd_t inp;
 
         msg = chnRead(comm_chn, (uint8_t *)&inp, sizeof(inp));
@@ -104,8 +103,10 @@ static int retrieve_input_data(void)
         /* Calculation and verification of checksum */
         uint8_t calc_ck = inp.speed + inp.steer * 2;
         if (calc_ck == inp.ck)
-        {
+        {   
+            
             cpStructWithFunc.on_set(inp.speed, inp.steer);
+            
             /* Assigning global variables to a value from a received data packet. */
             // speed_value = inp.speed;
             // angle_value = inp.steer;
@@ -179,9 +180,11 @@ static int retrieve_input_data(void)
 /* Initialization with a choice of USB or Serial. */
 void comm_init(structEventFun_t structWithFunc)
 {
+    
     cpStructWithFunc.on_start = structWithFunc.on_start;
     cpStructWithFunc.on_stop = structWithFunc.on_stop;
     cpStructWithFunc.on_set = structWithFunc.on_set;
+
     
 
 
