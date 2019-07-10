@@ -5,15 +5,39 @@
 /* For module test.
 Obtaining speed and angle values and sending them is processed.
 */
+
+
+void funct_on_stop(void){
+    palToggleLine(LINE_LED1);
+}
+
+void funct_on_start(void){
+    palToggleLine(LINE_LED2);
+}
+
+void fucnt_on_set(uint8_t speed, uint8_t street)
+{
+    palToggleLine(LINE_LED3);
+}
+
 int main(void)
 {
     chSysInit();
     halInit();
 
-    comm_init();
+    // funcEvent_t structForFunc = getDefaultCfg();
+    structEventFun_t structForFunc = {NULL, NULL, NULL};
+ 
+    structForFunc.on_set = &fucnt_on_set;
+    structForFunc.on_start =&funct_on_start;
+    structForFunc.on_stop =&funct_on_stop;
+    
+    comm_init(structForFunc);
 
     comm_speed_t value_speed_dbg = 0;
     comm_steer_t value_angle_dbg = 0;
+
+    
 
     while ( true )
     {   

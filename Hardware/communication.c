@@ -36,17 +36,18 @@ typedef struct {
 
 typedef struct {
 
+    void (*on_set)(uint8_t speed, uint8_t angle);
     void (*on_start)(void);
     void (*on_stop)(void);
-    void (*on_set)(uint8_t speed, uint8_t angle);
+    
 
-} funcEvent_t
+} structEventFun_t;
 
-funcEvent_t cpStructWithFunc;
+structEventFun_t cpStructWithFunc;
 
-funcEvent_t getDefaultCfg(void)
+structEventFun_t getDefaultCfg(void)
 {
-    return funcEvent_t structFuncNull = {NULL, NULL, NULL};
+    return structEventFun_t structFuncNull = {NULL, NULL, NULL};
 }
 
 
@@ -176,9 +177,12 @@ static int retrieve_input_data(void)
 }
 
 /* Initialization with a choice of USB or Serial. */
-void comm_init(funcEvent_t structWithFunc)
+void comm_init(structEventFun_t structWithFunc)
 {
-    cpStructWithFunc = structWithFunc;
+    cpStructWithFunc.on_start = structWithFunc.on_start;
+    cpStructWithFunc.on_stop = structWithFunc.on_stop;
+    cpStructWithFunc.on_set = structWithFunc.on_set;
+    
 
 
 #if (COMM_MODE == COMM_MODE_SERIAL_USB)
